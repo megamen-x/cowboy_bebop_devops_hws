@@ -3,7 +3,7 @@ version: '3.8'
 x-environment-defaults: &env
   AIRFLOW__CORE__EXECUTOR: LocalExecutor
   AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
-  AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
+  AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
   AIRFLOW__WEBSERVER__RBAC: 'true'
   AIRFLOW__CORE__FERNET_KEY: ${FERNET_KEY:-46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLbfzqDDho=}
   _AIRFLOW_WWW_USER_USERNAME: ${AIRFLOW_USER:-admin}
@@ -12,10 +12,12 @@ x-environment-defaults: &env
 x-airflow-common: &airflow-common
   build: .
   environment: *env
+  user: root
   volumes:
     - ./dags:/opt/airflow/dags
     - ./logs:/opt/airflow/logs
     - ./plugins:/opt/airflow/plugins
+    - ./spark:/opt/airflow/spark
   depends_on:
     postgres:
       condition: service_healthy
@@ -42,6 +44,25 @@ services:
       start_period: 5s
     restart: always
 
+  spark-master:
+    container_name: spark-master
+    image: apache/spark:3.5.0
+    ports:
+      - '4040:8080'
+      - '7077:7077'
+    command: '/opt/spark/bin/spark-class org.apache.spark.deploy.master.Master'
+    restart: always
+
+  spark-worker:
+    container_name: spark-worker
+    image: apache/spark:3.5.0
+    depends_on:
+      - spark-master
+    ports:
+      - "7000:7000"
+    command: '/opt/spark/bin/spark-class org.apache.spark.deploy.worker.Worker spark://spark-master:7077'
+    restart: always
+
   airflow-init:
     <<: *airflow-common
     command: version
@@ -52,6 +73,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      spark-worker:
+        condition: service_started
     healthcheck:
       disable: true
 
@@ -62,6 +85,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      spark-worker:
+        condition: service_started
       airflow-init:
         condition: service_completed_successfully
 
@@ -74,6 +99,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      spark-worker:
+        condition: service_started
       airflow-init:
         condition: service_completed_successfully
 
