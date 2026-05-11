@@ -1,0 +1,7 @@
+global:
+  scrape_interval: 10s # частота сбора
+scrape_configs:
+  - job_name: 'airflow' # по этому имени потом будем "искать" нужный индекс
+    metrics_path: /admin/metrics/
+    static_configs:
+      - targets: ['airflow-webserver:8080'] # хост (имя контейнера) и порт
