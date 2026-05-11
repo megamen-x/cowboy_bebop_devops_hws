@@ -1,3 +1,6 @@
+## [3.0.0] 
+  - Добавлен CI-пайплайн (`.github\workflows\.github-ci.yaml`)
+
 ## [2.0.0]
   - Dockerfile: добавлен шаг установки пакетов `procps` и `default-jre` для поддержки Spark-submit
   - Dockerfile: настроена смена пользователя `root/airflow` для корректной работы сервисов и прав доступа
