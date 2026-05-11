@@ -35,7 +35,7 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -t cowboy_bebopLab:latest .
+          docker build -t cowboy_bebop_lab:latest .
           echo "Билд успешно завершен!"
 
   deploy:
