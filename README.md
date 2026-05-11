@@ -52,11 +52,11 @@ sudo systemctl stop postgresql
 6. На странице DAGs найти и запустить `spark_example_dag`, подождать завершения
 7. Посмотреть на Spark Web UI `http://localhost:4040` состояние приложения в `Completed Applications`
 
-<!-- ![spark compl](assets/spark_comp.png)
-
-![airflow dag compl](assets/dag_run_spark.png) -->
+### Выполнение практической работы
 
 ![alloy conf](assets/alloy_conf.png)
+
+#### Для sum_of_squares_calculator
 
 ![prometheus tracks](assets/prometheus_tracks.png)
 
@@ -65,6 +65,17 @@ sudo systemctl stop postgresql
 ![grafana query](assets/grafana_query.png)
 
 ![grafana prom](assets/grafana_prom.png)
+
+![outputs](assets/squared_grafana_outputs.png)
+
+#### Для spark_example_dag
+
+![prometheus tracks](assets/prometheus_tracks_dag.png)
+
+![prometheus metrics](assets/prometheus_metrcis_dag.png)
+
+![outputs](assets/dag_grafana_outputs.png)
+
 
 
 ### Остановка
