@@ -1,7 +1,7 @@
 # cowboy_bebop_devops_hws
 Домашние задания по курсу "DevOps практики и инструменты", весна 2026
 
-# ЛР 2. Airflow + Spark
+# ЛР 4. Loki + Prometheus + Grafana
 
 ## Содержимое
 * `Dockerfile` - образ на основе `apache/airflow:2.7.1` с установленными `procps`, `default-jre` и провайдером `apache-airflow-providers-apache-spark`; копирует DAG’и и Spark‑скрипты.
