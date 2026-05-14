@@ -66,8 +66,6 @@ sudo systemctl stop postgresql
 
 ![grafana prom](assets/grafana_prom.png)
 
-![outputs](assets/squared_grafana_outputs.png)
-
 #### Для spark_example_dag
 
 ![prometheus tracks](assets/prometheus_tracks_dag.png)
