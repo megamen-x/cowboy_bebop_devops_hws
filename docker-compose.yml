@@ -30,24 +30,24 @@ x-airflow-common: &airflow-common
     start_period: 30s
 
 services:
-  loki: # сервис-обработчик логов
+  loki: # логирование с помощью loki
     image: grafana/loki:3.2.0
-    container_name: loki # имя контейнера Loki, важно для последующих шагов
+    container_name: loki
     ports:
     - "3100:3100"
-    command: -config.file=/etc/loki/local-config.yaml # запуск с дефолтным конфигом
+    command: -config.file=/etc/loki/local-config.yaml
 
-  alloy: # сервис-сборщик логов
+  alloy:
     image: grafana/alloy:v1.5.1
     volumes:
-    - ./logs:/opt/logs # здесь `./logs` - это локальная директория, которая монтируется в /opt/airflow/logs! Может называться по-другому
-    - ./alloy.conf:/etc/alloy/config.alloy # локальное имя можно любое
+    - ./logs:/opt/logs
+    - ./alloy.conf:/etc/alloy/config.alloy
     command:
     - run
     - --server.http.listen-addr=0.0.0.0:12345
     - /etc/alloy/config.alloy
 
-  grafana: # сервис визуализации
+  grafana: # визуализация логирования
     image: grafana/grafana:11.2.0
     ports:
     - "3000:3000"
@@ -56,13 +56,13 @@ services:
     - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
     - GF_PATHS_PROVISIONING=/etc/grafana/provisioning
 
-  prometheus:
+  prometheus:  # логирование с помощью prometheus
     image: prom/prometheus:v2.48.1
-    container_name: prometheus # имя контейнера, важно для последующих шагов
+    container_name: prometheus
     ports:
     - "9090:9090"
     volumes:
-    - ./prometheus.yml:/etc/prometheus/prometheus.yml # конфиг-файл, где описываем наши target-ы
+    - ./prometheus.yml:/etc/prometheus/prometheus.yml
     command:
     - '--config.file=/etc/prometheus/prometheus.yml'
 
