@@ -5,21 +5,9 @@
 
 ## Содержимое
 * `Dockerfile` - образ на основе `apache/airflow:2.7.1` с установленными `procps`, `default-jre` и провайдером `apache-airflow-providers-apache-spark`; копирует DAG’и и Spark‑скрипты.
-* `docker-compose.yml` - оркестрация сервисов: `postgres`, `spark-master`, `spark-worker`, `airflow-init`, `airflow-scheduler`, `airflow-webserver`.
+* `docker-compose.yml` - оркестрация сервисов: `postgres`, `spark-master`, `spark-worker`, `airflow-init`, `airflow-scheduler`, `airflow-webserver`, `loki`, `allow`, `prometheus`, `grafana`.
 * `dags/spark_dag.py` - DAG `spark_example_dag`, запускающий Spark‑приложение через `SparkSubmitOperator`.
 * `spark/test_script.py` - Spark‑задание, которое создает `SparkSession`, строит тестовый DataFrame и выводит его содержимое.
-
-## Работа нового DAG’а
-DAG `spark_example_dag` содержит единственную задачу:
-* `run_spark_job` - отправляет `spark/test_script.py` в кластер Spark через `spark-submit`.
-
-PySpark:
-* Подключается к мастеру `spark://spark-master:7077`.
-* Создает небольшой DataFrame с людьми и возрастом.
-* Отображает его в логах (`df.show()`).
-* Выводит общее количество записей.
-
-Запуск DAG’а производится вручную через веб‑интерфейс Airflow. Дополнительные параметры не требуются.
 
 ## Локальный деплой
 
@@ -51,29 +39,51 @@ sudo systemctl stop postgresql
    * Extra: `{}` (без этого не подключалось)
 6. На странице DAGs найти и запустить `spark_example_dag`, подождать завершения
 7. Посмотреть на Spark Web UI `http://localhost:4040` состояние приложения в `Completed Applications`
+8. Проверить состояние метрик по адресу `http://localhost:8080/admin/metrics`
+9. Перейти на `http://localhost:9090` в Prometheus и во вкладке `Status → Targets` проверить подключение к airflow
+10. Для тестов можно сделать запрос в Prometheus в разделе `Graph`
+11. Далее зайти в Grafana `http://localhost:3000` и подключить Loki и Prometheus в `Connections → Data sources`
+12. В Grafana на вкладке `Explore` настроить запросы в Airflow и добавить их на дэшборд
 
 ### Выполнение практической работы
 
+Просмотр логирования в Alloy (через логи контейнера)
+
 ![alloy conf](assets/alloy_conf.png)
 
-#### Для sum_of_squares_calculator
+#### Метрики для DAG sum_of_squares_calculator
+
+Проверка подключения к admin/metrics в Prometheus (Status → Targets):
 
 ![prometheus tracks](assets/prometheus_tracks.png)
 
+Запрос состояния DAG из Airflow через Prometheus:
+
 ![prometheus metrics](assets/prometheus_metrics.png)
+
+Подключение Loki в Grafana и вывод логов результатов работы DAG: 
 
 ![grafana query](assets/grafana_query.png)
 
+Подключение Prometheus в Grafana и вывод логов статуса DAG в Airflow: 
+
 ![grafana prom](assets/grafana_prom.png)
 
-#### Для spark_example_dag
+#### Метрики для DAG spark_example_dag
+
+Проверка подключения к admin/metrics в Prometheus:
 
 ![prometheus tracks](assets/prometheus_tracks_dag.png)
 
+Подключение Loki в Grafana аналогично как для sum_of_squares_calculator
+
+Подключение Prometheus в Grafana и вывод логов статуса DAG в Airflow:
+
 ![prometheus metrics](assets/prometheus_metrcis_dag.png)
 
-![outputs](assets/dag_grafana_outputs.png)
+Финальный дэшборд с логами состояния через Loki и Prometheus:
 
+![outputs](assets/dag_grafana_outputs.png)
 
 
 ### Остановка
@@ -86,3 +96,6 @@ docker compose down -v  # удалит тома БД (чистый сброс)
 * Spark‑кластер (`spark-master` и `spark-worker`) стартует вместе с остальными сервисами и доступен по портам `4040` (веб‑интерфейс) и `7077` (подключения).
 * Все скрипты, лежащие в локальной папке `spark/`, монтируются в контейнер Airflow по пути `/opt/airflow/spark`.
 * Логи Airflow сохраняются в локальной директории `./logs`.
+* Благодаря `apache-airflow[statsd]` и `airflow-exporter` удалось настроить admin/metrics для Airflow (без них страница 404 выдавала).
+* Проверки и графики Loki и Prometheus были настроены и проверены для двух DAG-скриптов из Airflow.
+* Финальный [docker-compose.yml](./docker-compose.yml)
